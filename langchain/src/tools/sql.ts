@@ -37,7 +37,7 @@ export class QuerySqlTool extends Tool implements SqlTool {
   /** @ignore */
   async _call(input: string) {
     try {
-      return await this.db.run(input);
+      return await this.db.run(input, []);
     } catch (error) {
       return `${error}`;
     }

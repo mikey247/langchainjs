@@ -130,7 +130,7 @@ test("Test run", async () => {
   const db = await SqlDatabase.fromDataSourceParams({
     appDataSource: datasource,
   });
-  const result = await db.run("SELECT * FROM users");
+  const result = await db.run("SELECT * FROM users WHERE age > ?", [19]);
   const expectStr = `[{"id":1,"name":"Alice","age":20},{"id":2,"name":"Bob","age":21},{"id":3,"name":"Charlie","age":22}]`;
   expect(result.trim()).toBe(expectStr.trim());
 });
@@ -140,7 +140,7 @@ test("Test run with error", async () => {
     const db = await SqlDatabase.fromDataSourceParams({
       appDataSource: datasource,
     });
-    await db.run("SELECT * FROM userss");
+    await db.run("SELECT * FROM userss WHERE id = ?", [1]);
   }).rejects.toThrow("SQLITE_ERROR: no such table: userss");
 });
 
