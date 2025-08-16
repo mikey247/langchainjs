@@ -148,13 +148,41 @@ export class SqlDatabase
   }
 
   /**
-   * Execute a SQL command and return a string representing the results.
-   * If the statement returns rows, a string of the results is returned.
-   * If the statement returns no rows, an empty string is returned.
+   * Execute a SQL command with optional parameter values and return a string
+   * representing the results. The command must begin with a whitelisted verb
+   * (e.g. SELECT, INSERT) and callers should use parameter placeholders
+   * ("?" or "$1") when providing values. If the statement returns rows, a
+   * string of the results is returned. If the statement returns no rows, an
+   * empty string is returned.
    */
-  async run(command: string, fetch: "all" | "one" = "all"): Promise<string> {
-    // TODO: Potential security issue here
-    const res = await this.appDataSource.query(command);
+  async run(
+    command: string,
+    values: unknown[] = [],
+    fetch: "all" | "one" = "all"
+  ): Promise<string> {
+    const firstToken = command.trim().split(/\s+/)[0]?.toUpperCase();
+    const allowedVerbs = [
+      "SELECT",
+      "INSERT",
+      "UPDATE",
+      "DELETE",
+      "WITH",
+      "CREATE",
+      "ALTER",
+      "DROP",
+    ];
+    if (!allowedVerbs.includes(firstToken)) {
+      throw new Error(`Unsupported SQL verb: ${firstToken}`);
+    }
+    if (
+      values.length > 0 &&
+      !/[?$]\d*/.test(command)
+    ) {
+      throw new Error(
+        "Parameterized queries must use placeholders like ? or $1 in the command."
+      );
+    }
+    const res = await this.appDataSource.query(command, values);
 
     if (fetch === "all") {
       return JSON.stringify(res);

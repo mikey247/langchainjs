@@ -139,7 +139,7 @@ export class SqlDatabaseChain extends BaseChain {
     );
     let queryResult = "";
     try {
-      queryResult = await this.database.appDataSource.query(sqlCommand);
+      queryResult = await this.database.run(sqlCommand, []);
     } catch (error) {
       console.error(error);
     }
@@ -148,9 +148,7 @@ export class SqlDatabaseChain extends BaseChain {
     if (this.returnDirect) {
       finalResult = { [this.outputKey]: queryResult };
     } else {
-      inputText += `${sqlCommand}\nSQLResult: ${JSON.stringify(
-        queryResult
-      )}\nAnswer:`;
+      inputText += `${sqlCommand}\nSQLResult: ${queryResult}\nAnswer:`;
       llmInputs.input = inputText;
       finalResult = {
         [this.outputKey]: await llmChain.predict(
